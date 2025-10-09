@@ -1,0 +1,6 @@
+name: OreMining
+version: '1.0-SNAPSHOT'
+main: plugin.oreMining.Main
+api-version: '1.21'
+commands:
+  oreMining:
