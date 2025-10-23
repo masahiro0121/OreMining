@@ -19,11 +19,11 @@
 ## MySQLの設定
 - データベース名： oremining_server
   - テーブル名： player_score
-    - テーブル構造
-        - id
-        - playerName
-        - score
-        - registeredAt
+      - テーブル構造
+        1. id
+        1. playerName
+        1. score
+        1. registeredAt
 
 ## 独自要素
 #### 鉱石の種類と点数の表示
