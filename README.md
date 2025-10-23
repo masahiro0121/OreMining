@@ -20,7 +20,7 @@
 - **データベース名**： oremining_server
   - **テーブル名**： player_score
 #### player_score
-| id | playerName | score | registeredAt |
+| id | player_name | score | registered_at |
 | ---- | ---- | ---- | ---- |
 | 1 | masahiro | 193 | 1993-01-21 |
 
