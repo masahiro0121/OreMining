@@ -22,7 +22,7 @@
 #### player_score
 | id | playerName | score | registeredAt |
 | ---- | ---- | ---- | ---- |
-| 1 | masahiro | 100 | 1993-01-21 |
+| 1 | masahiro | 193 | 1993-01-21 |
 
 ## 独自要素
 #### 鉱石の種類と点数の表示
