@@ -14,8 +14,8 @@ import plugin.oreMining.mapper.data.PlayerScore;
  */
 public class PlayerScoreData {
 
-  private SqlSessionFactory sqlSessionFactory;
-  private PlayerScoreMapper mapper;
+  private final SqlSessionFactory sqlSessionFactory;
+  private final PlayerScoreMapper mapper;
 
   public PlayerScoreData() {
     try {

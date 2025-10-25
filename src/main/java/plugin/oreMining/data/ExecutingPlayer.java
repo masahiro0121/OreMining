@@ -21,6 +21,6 @@ public class ExecutingPlayer {
   public ExecutingPlayer(String playerName) {
     this.playerName = playerName;
     this.oreBonusCount = 1;
-    this.lastBlockType = Material.BONE;
+    this.lastBlockType = null;
   }
 }

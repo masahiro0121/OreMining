@@ -1,25 +1,12 @@
 package plugin.oreMining.command;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import plugin.oreMining.Main;
 import plugin.oreMining.PlayerScoreData;
 import plugin.oreMining.data.ExecutingPlayer;
-import plugin.oreMining.mapper.PlayerScoreMapper;
+import plugin.oreMining.data.OreData.OreType;
 import plugin.oreMining.mapper.data.PlayerScore;
 
 /**
@@ -42,6 +29,7 @@ import plugin.oreMining.mapper.data.PlayerScore;
 public class OreMiningCommand extends BaseCommand implements Listener {
 
   public static final int GAME_TIME = 20;
+  public static final int TICKS_PER_SECOND = 20;
   public static final String LIST = "list";
 
   private final Main main;
@@ -55,7 +43,6 @@ public class OreMiningCommand extends BaseCommand implements Listener {
   @Override
   public boolean onExecutePlayerCommand(Player player, @NotNull Command command,
       @NotNull String label, @NotNull String[] args) {
-    //最初の引数が「list」だったらスコア情報一覧を表示して処理を終了する
     if(args.length == 1 && (LIST.equals(args[0]))){
       sendPlayerScoreList(player);
       return  false;
@@ -63,7 +50,7 @@ public class OreMiningCommand extends BaseCommand implements Listener {
 
     ExecutingPlayer nowExecutingPlayer = getPlayerScore(player);
 
-    InitStatus(player);
+    initStatus(player);
 
     player.sendTitle("鉱石採掘ゲームスタート！",
         "ゲーム時間　残り" + nowExecutingPlayer.getGameTime() + "秒！",
@@ -96,9 +83,9 @@ public class OreMiningCommand extends BaseCommand implements Listener {
 
   @EventHandler
   public void onBlockBreak(BlockBreakEvent e) {
-    // ここにブロックが壊された時の処理を追加
     Material blockType = e.getBlock().getType();
     Player player = e.getPlayer();
+    OreType oreType = OreType.fromBlockType(blockType.name());
 
     if(Objects.isNull(player) || executingPlayerList.isEmpty()) {
       return;
@@ -112,47 +99,31 @@ public class OreMiningCommand extends BaseCommand implements Listener {
             return;
           }
 
-          int point = switch (blockType) {
-            case COAL_ORE -> 10;
-            case IRON_ORE -> 20;
-            case COPPER_ORE -> 30;
-            case GOLD_ORE -> 40;
-            case EMERALD_ORE -> 50;
-            case DIAMOND_ORE -> 60;
-            default -> 0;
-          };
-
-          String oreName = "";
-          String string = switch (blockType) {
-            case COAL_ORE -> oreName = "石炭";
-            case IRON_ORE -> oreName = "鉄";
-            case COPPER_ORE -> oreName = "銅";
-            case GOLD_ORE -> oreName = "金";
-            case EMERALD_ORE -> oreName = "エメラルド";
-            case DIAMOND_ORE -> oreName = "ダイヤモンド";
-            default -> oreName= "";
-          };
-
-          if(point != 0) {
-            if(blockType.equals(executingPlayer.getLastBlockType())) {
-              executingPlayer.setOreBonusCount(executingPlayer.getOreBonusCount() +1 );
-            } else {
-              executingPlayer.setOreBonusCount(1);
-            }
-
-            executingPlayer.setScore(executingPlayer.getScore() + point);
-            player.sendMessage(
-                oreName + "ブロックを壊した！現在のスコアは" + executingPlayer.getScore() + "点です！");
-
-            if (executingPlayer.getOreBonusCount() >= 3 ) {
-              executingPlayer.setScore(executingPlayer.getScore() + 30);
-              player.sendMessage(
-                  oreName + "ブロックを3連続で壊した！ボーナスポイント30点追加！");
-            }
-
-            executingPlayer.setLastBlockType(blockType);
+          int point = oreType.getOrePoint();
+          if (point == 0) {
+            return;
           }
 
+          String oreName = oreType.getOreName();
+
+          executingPlayer.setScore(executingPlayer.getScore() + point);
+          player.sendMessage(
+              oreName + "ブロックを壊した！現在のスコアは" + executingPlayer.getScore() + "点です！");
+
+          if(blockType.equals(executingPlayer.getLastBlockType())) {
+            executingPlayer.setOreBonusCount(executingPlayer.getOreBonusCount() +1 );
+          } else {
+            executingPlayer.setOreBonusCount(1);
+          }
+
+          executingPlayer.setLastBlockType(blockType);
+
+          if (executingPlayer.getOreBonusCount() >= 3 ) {
+            executingPlayer.setScore(executingPlayer.getScore() + 30);
+            player.sendMessage(
+                oreName + "ブロックを3連続で壊した！ボーナスポイント30点追加！");
+            executingPlayer.setLastBlockType(null);
+          }
         });
   }
 
@@ -184,8 +155,7 @@ public class OreMiningCommand extends BaseCommand implements Listener {
    *
    * @param player　コマンドを実行したプレイヤー
    */
-  private static void InitStatus(Player player) {
-    //プレイヤーの状態を初期化する
+  private static void initStatus(Player player) {
     player.setHealth(20);
     player.setFoodLevel(20);
 
@@ -224,13 +194,12 @@ public class OreMiningCommand extends BaseCommand implements Listener {
             nowExecutingPlayer.getPlayerName() + "合計" + nowExecutingPlayer.getScore() + "点！",
             0, 60, 0);
 
-        // スコア登録処理
         playerScoreData.insert(new PlayerScore(nowExecutingPlayer.getPlayerName(), nowExecutingPlayer.getScore()));
 
         return ;
       }
       nowExecutingPlayer.setGameTime(nowExecutingPlayer.getGameTime() - 1);
-    },0, 1*20);
+    },0, TICKS_PER_SECOND);
   }
 
 }
