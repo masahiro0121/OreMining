@@ -17,6 +17,7 @@ https://github.com/user-attachments/assets/d28269d0-3953-475e-a6c6-1e651570a5d3
 ## 開発環境
 - Java 21
 - MySQL 8.0.43
+- MyBatis 3.5.19
 - Spigot: 1.21.8
 - Minecraft: 1.21.8
 
