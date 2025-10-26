@@ -1,7 +1,6 @@
 package plugin.oreMining;
 
 import org.bukkit.Bukkit;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import plugin.oreMining.command.OreMiningCommand;
 
