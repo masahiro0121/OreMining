@@ -136,7 +136,7 @@ public class OreMiningCommand extends BaseCommand implements Listener {
    * @return 現在コマンドを実行しているプレイヤーのスコア情報
    */
   private ExecutingPlayer getPlayerScore(Player player) {
-    ExecutingPlayer executingPlayer = new ExecutingPlayer(player.getName());
+    ExecutingPlayer executingPlayer;
 
     if(executingPlayerList.isEmpty()){
       executingPlayer = addNewPlayer(player);
