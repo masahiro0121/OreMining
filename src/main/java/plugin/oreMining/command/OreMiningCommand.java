@@ -30,6 +30,8 @@ public class OreMiningCommand extends BaseCommand implements Listener {
 
   public static final int GAME_TIME = 20;
   public static final int TICKS_PER_SECOND = 20;
+  public static final int BONUS_POINT = 30;
+
   public static final String LIST = "list";
 
   private final Main main;
@@ -119,7 +121,7 @@ public class OreMiningCommand extends BaseCommand implements Listener {
           executingPlayer.setLastBlockType(blockType);
 
           if (executingPlayer.getOreBonusCount() >= 3 ) {
-            executingPlayer.setScore(executingPlayer.getScore() + 30);
+            executingPlayer.setScore(executingPlayer.getScore() + BONUS_POINT);
             player.sendMessage(
                 oreName + "ブロックを3連続で壊した！ボーナスポイント30点追加！");
             executingPlayer.setLastBlockType(null);
@@ -135,13 +137,14 @@ public class OreMiningCommand extends BaseCommand implements Listener {
    */
   private ExecutingPlayer getPlayerScore(Player player) {
     ExecutingPlayer executingPlayer = new ExecutingPlayer(player.getName());
+
     if(executingPlayerList.isEmpty()){
       executingPlayer = addNewPlayer(player);
     }else {
-      executingPlayer = executingPlayerList.stream()
-          .findFirst().map(ps -> ps.getPlayerName().equals(player.getName())
-              ? ps
-              : addNewPlayer(player)).orElse(executingPlayer);
+        executingPlayer = executingPlayerList.stream()
+          .filter(p -> p.getPlayerName().equals(player.getName()))
+          .findFirst()
+          .orElseGet(() -> addNewPlayer(player));
     }
 
     executingPlayer.setGameTime(GAME_TIME);
@@ -177,7 +180,7 @@ public class OreMiningCommand extends BaseCommand implements Listener {
   }
 
   /**
-   * ゲームを実行します。基底の時間内に敵を倒すとスコアが加算される。時間経過後に合計スコアを表示
+   * ゲームを実行します。鉱石を採掘するとスコアが加算される。時間経過後に合計スコアを表示
    *
    * @param player コマンドを実行したプレイヤー
    * @param nowExecutingPlayer プレイヤースコア情報

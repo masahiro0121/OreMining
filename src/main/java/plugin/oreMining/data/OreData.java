@@ -27,6 +27,10 @@ public class OreData {
     }
 
     public static OreType fromBlockType(String blockType) {
+      if (blockType == null) {
+        return UNKNOWN;
+      }
+
       try {
         return OreType.valueOf(blockType);
       } catch (IllegalArgumentException e) {
